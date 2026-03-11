@@ -119,20 +119,24 @@ jobs:
           username: ${{ secrets.VM_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/devops-assignment/task-1
+            cd ~/devops-assignment
 
             # pull latest code
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
-            # pull new images
-            docker-compose pull
+            cd task-1
 
-            # rebuild and restart containers
-            docker-compose up -d --build
+            # stop and remove old containers cleanly
+            docker-compose down --remove-orphans
+
+            # rebuild and restart all containers
+            docker-compose up -d --build --force-recreate
 
             # cleanup old images
             docker image prune -f
 
-            # verify deployment
+            # quick health check
+            sleep 10
             echo "Deployment completed at $(date)"
             docker-compose ps
